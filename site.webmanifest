@@ -1,0 +1,17 @@
+{
+  "name": "Organization of City Boyz Community Portal",
+  "short_name": "OCB Portal",
+  "description": "Community information, public updates, voting, and shared media.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef4f7",
+  "theme_color": "#0b3861",
+  "icons": [
+    {
+      "src": "/IMG_3837.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

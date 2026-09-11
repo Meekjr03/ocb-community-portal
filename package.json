@@ -1,0 +1,27 @@
+{
+  "name": "ocb-community-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure backend for the Organization of City Boyz community portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "argon2": "^0.41.1",
+    "connect-sqlite3": "^0.9.15",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "better-sqlite3": "^11.8.1",
+    "multer": "^2.0.2"
+  },
+  "allowScripts": {
+    "argon2@0.41.1": true,
+    "better-sqlite3@11.10.0": true,
+    "sqlite3@5.1.7": true,
+    "multer@2.3.0": true
+  }
+}
