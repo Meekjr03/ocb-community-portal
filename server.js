@@ -381,4 +381,9 @@ app.use('/uploads', express.static(uploadDirectory, { dotfiles: 'deny', index: f
 app.use(express.static(__dirname, { extensions: ['html'] }));
 app.use((error, req, res, next) => { console.error(error); res.status(500).json({ error: 'Unexpected server error.' }); });
 
-provisionAdministrator().then(() => app.listen(port, () => console.log(`OCB portal running at http://localhost:${port}`))).catch(error => { console.error(error); process.exit(1); });
+app.listen(port, '0.0.0.0', () => {
+  console.log(`OCB portal running at http://0.0.0.0:${port}`);
+  provisionAdministrator().catch(error => {
+    console.error('Failed to provision administrator:', error);
+  });
+});
