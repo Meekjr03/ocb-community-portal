@@ -54,6 +54,8 @@ function renderServerUser() {
   document.querySelectorAll('.admin-only').forEach(element => element.classList.toggle('show', isAdministrator));
   const uploadLock = document.getElementById('uploadLock');
   if (uploadLock) uploadLock.style.display = isAdministrator ? 'none' : 'block';
+  const accountMenuLink = document.getElementById('accountMenuLink');
+  if (accountMenuLink) accountMenuLink.style.display = portalState.user ? 'none' : 'block';
   const authLink = document.getElementById('authLink');
   if (authLink) authLink.classList.toggle('show', !portalState.user);
   const topSignOutButton = document.getElementById('topSignOutButton');
