@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Sign in or create an Organization of City Boyz community account.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in | Organization of City Boyz</title>
+  <style>
+    :root{--ink:#17212b;--muted:#65717d;--blue:#135d9e;--navy:#0b3861;--gold:#f3b63f;--cream:#fffaf1;--line:#dce5eb}
+    *{box-sizing:border-box}body{margin:0;color:var(--ink);background:linear-gradient(135deg,#eef4f7,var(--cream));font-family:Georgia,"Times New Roman",serif;min-height:100vh}.topbar{background:var(--navy);color:#fff;padding:16px 5vw;display:flex;justify-content:space-between;gap:18px;align-items:center}.brand{font-weight:bold;letter-spacing:.04em}.topbar a{color:#e7f4ff;text-decoration:none;font:15px Arial,sans-serif}.auth-shell{width:min(960px,90vw);margin:0 auto;padding:64px 0}.auth-heading{max-width:650px;margin-bottom:28px}.eyebrow{color:var(--blue);font:700 12px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase}.auth-heading h1{font-size:clamp(2.4rem,6vw,4.6rem);line-height:1;margin:14px 0}.auth-heading p,.form-note{color:var(--muted);line-height:1.6}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.panel{background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px;box-shadow:0 18px 50px rgba(20,42,62,.12)}.panel h2{margin-top:0}.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}.tab{border:0;border-bottom:3px solid transparent;background:transparent;padding:11px 14px;color:var(--muted);font:inherit;cursor:pointer}.tab.active{color:var(--blue);border-bottom-color:var(--gold);font-weight:bold}.tab-panel{display:none}.tab-panel.active{display:block}label{display:block;margin:13px 0 6px;font:bold 13px Arial,sans-serif}input{width:100%;padding:11px 12px;border:1px solid #cbd8e0;border-radius:3px;font:inherit}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.password-field{position:relative}.password-field input{padding-right:68px}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font:bold 12px Arial,sans-serif;padding:5px;cursor:pointer}.btn{border:0;border-radius:4px;padding:12px 18px;font-weight:700;cursor:pointer}.btn-primary{background:var(--gold);color:#2d230d;margin-top:16px}.alert{display:none;padding:10px 12px;margin:12px 0;font:14px Arial,sans-serif}.alert.show{display:block}.alert.success{background:#e4f4eb;color:#23784e}.alert.error{background:#fbe9e7;color:#b53a35}@media(max-width:700px){.auth-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.topbar{display:block}.topbar a{display:inline-block;margin-top:10px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand">OCB / COMMUNITY PORTAL</div></header>
+  <main class="auth-shell">
+    <div class="auth-heading"><div class="eyebrow">Community access</div><h1>Welcome back.</h1><p>Sign in to participate, or create an account to join the Organization of City Boyz community.</p></div>
+    <div class="auth-grid">
+      <section class="panel">
+        <div class="tabs"><button class="tab active" data-tab="signin" type="button">Sign in</button><button class="tab" data-tab="signup" type="button">Create account</button></div>
+        <div id="signin" class="tab-panel active"><form id="signinForm"><label for="signinEmail">Email address</label><input id="signinEmail" name="signinEmail" type="email" required autocomplete="email"><label for="signinPassword">Password</label><input id="signinPassword" name="signinPassword" type="password" required autocomplete="current-password"><button class="btn btn-primary" type="submit">Sign in</button></form></div>
+        <div id="signup" class="tab-panel"><form id="signupForm"><div class="form-row"><div><label for="signupName">Full name</label><input id="signupName" name="signupName" type="text" required autocomplete="name"></div><div><label for="signupEmail">Email address</label><input id="signupEmail" name="signupEmail" type="email" required autocomplete="email"></div></div><label for="signupPassword">Create password</label><input id="signupPassword" name="signupPassword" type="password" minlength="12" required autocomplete="new-password"><button class="btn btn-primary" type="submit">Create account</button></form></div>
+        <div id="authMessage" class="alert" role="status"></div>
+      </section>
+    </div>
+  </main>
+  <script src="/auth.js?v=2"></script>
+</body>
+</html>
