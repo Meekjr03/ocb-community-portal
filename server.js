@@ -89,6 +89,13 @@ database.exec(`
     leaders TEXT NOT NULL DEFAULT '[]',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS public_updates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    body TEXT NOT NULL,
+    published_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (published_by) REFERENCES users(id)
+  );
 
 `);
 try { database.exec("ALTER TABLE slideshow_items ADD COLUMN mime_type TEXT NOT NULL DEFAULT 'image/jpeg'"); } catch (error) { if (!error.message.includes('duplicate column name')) throw error; }
@@ -122,7 +129,11 @@ const readContent = () => {
   }
   return { pollQuestion: row.poll_question, pollOptions: JSON.parse(row.poll_options), information: row.information, publicUpdates: row.public_updates, aboutUs: row.about_us, mission: row.mission, leaders: JSON.parse(row.leaders || '[]'), updatedAt: row.updated_at };
 };
-readContent();
+const initialContent = readContent();
+if (initialContent.publicUpdates) {
+  const existingUpdate = database.prepare('SELECT id FROM public_updates LIMIT 1').get();
+  if (!existingUpdate) database.prepare('INSERT INTO public_updates (body) VALUES (?)').run(initialContent.publicUpdates);
+}
 const defaultStatistics = [
   { name: 'Montserrado', peopleHelped: 845 },
   { name: 'Margibi', peopleHelped: 620 },
@@ -239,6 +250,25 @@ app.get('/api/admin/users', requireAdministrator, (req, res) => {
   res.json({ users });
 });
 app.get('/api/content', (req, res) => res.json(readContent()));
+app.get('/api/public-updates', (req, res) => {
+  const updates = database.prepare('SELECT id, body, created_at AS createdAt FROM public_updates ORDER BY created_at DESC, id DESC').all();
+  res.json({ updates });
+});
+app.post('/api/admin/public-updates', requireAdministrator, (req, res, next) => {
+  try {
+    const body = typeof req.body.body === 'string' ? req.body.body.trim() : '';
+    if (!body || body.length > 5000) return res.status(400).json({ error: 'Write an update of up to 5,000 characters.' });
+    database.prepare('INSERT INTO public_updates (body, published_by) VALUES (?, ?)').run(body, req.session.user.id);
+    res.status(201).json({ message: 'Public update published.' });
+  } catch (error) { next(error); }
+});
+app.delete('/api/admin/public-updates/:id', requireAdministrator, (req, res, next) => {
+  try {
+    const result = database.prepare('DELETE FROM public_updates WHERE id = ?').run(Number(req.params.id));
+    if (!result.changes) return res.status(404).json({ error: 'Public update not found.' });
+    res.status(204).end();
+  } catch (error) { next(error); }
+});
 app.put('/api/admin/content', requireAdministrator, (req, res, next) => {
   try {
     const pollQuestion = typeof req.body.pollQuestion === 'string' ? req.body.pollQuestion.trim() : '';

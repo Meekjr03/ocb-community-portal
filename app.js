@@ -107,6 +107,12 @@ async function loadContent() {
   const mission = document.getElementById('mission-copy');
   if (mission) mission.textContent = content.mission;
   renderLeaders(content.leaders);
+  await loadPublicUpdates();
+  if (portalState.user?.role === 'administrator') renderAdminContentEditor(content);
+}
+
+async function loadPublicUpdates() {
+  const response = await apiRequest('/api/public-updates');
   let updates = document.getElementById('public-updates');
   if (!updates) {
     updates = document.createElement('section');
@@ -115,9 +121,9 @@ async function loadContent() {
     const media = document.getElementById('media');
     media.parentNode.insertBefore(updates, media);
   }
-  updates.hidden = !content.publicUpdates;
-  updates.innerHTML = `<div class="section-heading"><h2>Public updates</h2></div><div class="panel"><p>${escapeHtml(content.publicUpdates).replace(/\n/g, '<br>')}</p></div>`;
-  if (portalState.user?.role === 'administrator') renderAdminContentEditor(content);
+  updates.hidden = !response.updates.length;
+  updates.innerHTML = `<div class="section-heading"><h2>Public updates</h2></div>${response.updates.map(update => `<article class="panel public-update"><p>${escapeHtml(update.body).replace(/\n/g, '<br>')}</p><small class="form-note">${escapeHtml(new Date(update.createdAt).toLocaleString())}</small></article>`).join('')}`;
+  if (portalState.user?.role === 'administrator') renderPublicUpdatesEditor(response.updates);
 }
 
 function renderLeaders(leaders = []) {
@@ -147,6 +153,39 @@ function renderAdminContentEditor(content) {
   document.getElementById('contentMission').value = content.mission;
   document.getElementById('contentUpdates').value = content.publicUpdates;
   renderLeaderEditors(content.leaders || []);
+}
+
+function renderPublicUpdatesEditor(updates) {
+  const container = document.querySelector('#admin .container');
+  if (!container) return;
+  let editor = document.getElementById('publicUpdatesEditor');
+  if (!editor) {
+    editor = document.createElement('div');
+    editor.id = 'publicUpdatesEditor';
+    editor.className = 'panel';
+    editor.innerHTML = '<h2>Publish public updates</h2><p class="form-note">Add unlimited written updates. Images and videos can be added through the media and story tools below.</p><form id="publicUpdateForm"><label for="publicUpdateBody">Written update</label><textarea id="publicUpdateBody" class="admin-textarea" maxlength="5000" required></textarea><button class="btn btn-primary form-button" type="submit">Publish update</button><div id="publicUpdateMessage" class="alert" role="status"></div></form><div id="publicUpdateList"></div>';
+    container.insertBefore(editor, container.firstElementChild);
+    document.getElementById('publicUpdateForm').addEventListener('submit', publishPublicUpdate);
+  }
+  document.getElementById('publicUpdateList').innerHTML = updates.length ? `<h3>Published updates</h3>${updates.map(update => `<div class="member-row"><span>${escapeHtml(update.body).replace(/\n/g, '<br>')}</span><button class="btn btn-outline" data-update-id="${update.id}" type="button">Delete</button></div>`).join('')}` : '<p class="form-note">No written updates published yet.</p>';
+  document.querySelectorAll('[data-update-id]').forEach(button => button.addEventListener('click', deletePublicUpdate));
+}
+
+async function publishPublicUpdate(event) {
+  event.preventDefault();
+  try {
+    await apiRequest('/api/admin/public-updates', { method: 'POST', body: JSON.stringify({ body: document.getElementById('publicUpdateBody').value }) });
+    event.target.reset();
+    await loadPublicUpdates();
+    showPortalMessage('publicUpdateMessage', 'Public update published.', 'success');
+  } catch (error) { showPortalMessage('publicUpdateMessage', error.message, 'error'); }
+}
+
+async function deletePublicUpdate(event) {
+  try {
+    await apiRequest(`/api/admin/public-updates/${event.currentTarget.dataset.updateId}`, { method: 'DELETE' });
+    await loadPublicUpdates();
+  } catch (error) { showPortalMessage('publicUpdateMessage', error.message, 'error'); }
 }
 
 async function clearPublicUpdates() {
