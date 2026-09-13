@@ -399,10 +399,12 @@ function renderStatisticsMap(stats = []) {
   if (!markers) return;
   markers.innerHTML = stats.map(county => {
     const point = liberiaCountyPositions[county.name] || { x: 250, y: 240 };
-    const labelVal = Number(county.peopleHelped || 0).toLocaleString();
-    return `<g transform="translate(${point.x}, ${point.y})" style="cursor:pointer;">
-      <circle r="10" fill="#d97706" opacity="0.25"/>
-      <circle r="5" fill="#d97706" stroke="#0b3861" stroke-width="1.5"/>
+    const peopleHelped = Number(county.peopleHelped || 0);
+    const beaconClass = peopleHelped > 0 ? 'beacon-active' : 'beacon-empty';
+    const labelVal = peopleHelped.toLocaleString();
+    return `<g class="county-beacon ${beaconClass}" transform="translate(${point.x}, ${point.y})" style="cursor:pointer;">
+      <circle class="beacon-ring" r="10" opacity="0.28"/>
+      <circle class="beacon-core" r="5" stroke="#0b3861" stroke-width="1.5"/>
       <rect x="-16" y="7" width="32" height="13" rx="3" fill="#ffffff" stroke="#0b3861" stroke-width="0.8" opacity="0.92"/>
       <text x="0" y="16" font-size="9" font-family="Arial, sans-serif" font-weight="bold" fill="#0b3861" text-anchor="middle">${labelVal}</text>
     </g>`;
