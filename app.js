@@ -54,6 +54,8 @@ function renderServerUser() {
   document.querySelectorAll('.admin-only').forEach(element => element.classList.toggle('show', isAdministrator));
   const uploadLock = document.getElementById('uploadLock');
   if (uploadLock) uploadLock.style.display = isAdministrator ? 'none' : 'block';
+  const authLink = document.getElementById('authLink');
+  if (authLink) authLink.classList.toggle('show', !portalState.user);
   const topSignOutButton = document.getElementById('topSignOutButton');
   if (topSignOutButton) topSignOutButton.classList.toggle('show', Boolean(portalState.user));
   const userBar = document.getElementById('userBar');
@@ -273,15 +275,15 @@ document.getElementById('mediaCaption').name = 'caption';
 document.getElementById('signOutButton').addEventListener('click', async event => {
   event.preventDefault();
   event.stopImmediatePropagation();
-  await apiRequest('/api/auth/logout', { method: 'POST' });
-  window.location.href = 'auth.html';
+  try { await apiRequest('/api/auth/logout', { method: 'POST' }); }
+  finally { window.location.href = '/auth.html'; }
 }, true);
 
 const topSignOutButton = document.getElementById('topSignOutButton');
 if (topSignOutButton) topSignOutButton.addEventListener('click', async event => {
   event.preventDefault();
-  await apiRequest('/api/auth/logout', { method: 'POST' });
-  window.location.href = 'auth.html';
+  try { await apiRequest('/api/auth/logout', { method: 'POST' }); }
+  finally { window.location.href = '/auth.html'; }
 });
 
 document.getElementById('pollForm').addEventListener('submit', async event => {
