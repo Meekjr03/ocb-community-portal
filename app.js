@@ -267,7 +267,7 @@ function renderAdminDeletionControls(media, stories) {
     panel.addEventListener('click', deletePublishedContent);
   }
   if (media) document.getElementById('deleteMediaList').innerHTML = `<h3>Community media</h3>${media.length ? media.map(item => `<div class="member-row"><span>${escapeHtml(item.caption)}</span><button class="btn btn-outline" data-delete-type="media" data-delete-id="${item.id}" type="button">Delete</button></div>`).join('') : '<p class="form-note">No community media.</p>'}`;
-  if (stories) document.getElementById('deleteStoriesList').innerHTML = `<h3>72-hour stories</h3>${stories.length ? stories.map(item => `<div class="member-row"><span>${escapeHtml(item.caption || item.original_name)}</span><button class="btn btn-outline" data-delete-type="stories" data-delete-id="${item.id}" type="button">Delete</button></div>`).join('') : '<p class="form-note">No active stories.</p>'}`;
+  if (stories) document.getElementById('deleteStoriesList').innerHTML = `<h3>Community stories</h3>${stories.length ? stories.map(item => `<div class="member-row"><span>${escapeHtml(item.caption || item.original_name)}</span><button class="btn btn-outline" data-delete-type="stories" data-delete-id="${item.id}" type="button">Delete</button></div>`).join('') : '<p class="form-note">No stories published yet.</p>'}`;
 }
 
 async function deletePublishedContent(event) {
@@ -360,7 +360,7 @@ document.getElementById('storyForm').addEventListener('submit', async event => {
     await apiRequest('/api/admin/stories', { method: 'POST', body: formData });
     event.target.reset();
     await loadStories();
-    showPortalMessage('storyMessage', '72-hour story published.', 'success');
+    showPortalMessage('storyMessage', 'Community story published.', 'success');
   } catch (error) { showPortalMessage('storyMessage', error.message, 'error'); }
 }, true);
 

@@ -169,13 +169,8 @@ const slideshowUpload = multer({
   fileFilter: (req, file, callback) => callback(null, /^(image|video)\//.test(file.mimetype))
 });
 
-function removeExpiredStories() {
-  const expired = database.prepare("SELECT filename FROM stories WHERE expires_at <= datetime('now')").all();
-  database.prepare("DELETE FROM stories WHERE expires_at <= datetime('now')").run();
-  expired.forEach(story => fs.rmSync(path.join(uploadDirectory, story.filename), { force: true }));
-}
-database.prepare("UPDATE stories SET expires_at = datetime(created_at, '+72 hours') WHERE expires_at > datetime('now')").run();
-removeExpiredStories();
+function removeExpiredStories() {}
+database.prepare("UPDATE stories SET expires_at = datetime('now', '+100 years')").run();
 
 async function provisionAdministrator() {
   const email = adminEmail;
@@ -368,7 +363,7 @@ app.delete('/api/admin/slideshow/:id', requireAdministrator, (req, res, next) =>
 });
 app.get('/api/stories', (req, res) => {
   removeExpiredStories();
-  const items = database.prepare('SELECT id, filename, original_name, mime_type, caption, created_at, expires_at FROM stories WHERE expires_at > datetime(\'now\') ORDER BY created_at DESC').all();
+  const items = database.prepare('SELECT id, filename, original_name, mime_type, caption, created_at, expires_at FROM stories ORDER BY created_at DESC').all();
   res.json({ stories: items.map(item => ({ ...item, url: `/uploads/${encodeURIComponent(item.filename)}` })) });
 });
 app.delete('/api/admin/stories/:id', requireAdministrator, (req, res, next) => {
@@ -384,8 +379,8 @@ app.post('/api/admin/stories', requireAdministrator, upload.single('story'), (re
   try {
     if (!req.file) return res.status(400).json({ error: 'Choose an image or video under 50 MB.' });
     const caption = typeof req.body.caption === 'string' ? req.body.caption.trim().slice(0, 160) : '';
-    database.prepare("INSERT INTO stories (filename, original_name, mime_type, caption, uploaded_by, expires_at) VALUES (?, ?, ?, ?, ?, datetime('now', '+72 hours'))").run(req.file.filename, req.file.originalname.slice(0, 255), req.file.mimetype, caption, req.session.user.id);
-    res.status(201).json({ message: '72-hour story published.' });
+    database.prepare("INSERT INTO stories (filename, original_name, mime_type, caption, uploaded_by, expires_at) VALUES (?, ?, ?, ?, ?, datetime('now', '+100 years'))").run(req.file.filename, req.file.originalname.slice(0, 255), req.file.mimetype, caption, req.session.user.id);
+    res.status(201).json({ message: 'Community story published.' });
   } catch (error) { if (req.file) fs.rmSync(req.file.path, { force: true }); next(error); }
 });
 app.get('/api/statistics', (req, res) => {
