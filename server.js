@@ -383,7 +383,5 @@ app.use((error, req, res, next) => { console.error(error); res.status(500).json(
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`OCB portal running at http://0.0.0.0:${port}`);
-  provisionAdministrator().catch(error => {
-    console.error('Failed to provision administrator:', error);
-  });
+  provisionAdministrator().catch(error => console.error('Failed to provision administrator:', error));
 });
