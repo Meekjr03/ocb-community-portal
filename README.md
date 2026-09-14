@@ -29,9 +29,11 @@ The server creates the administrator account on first start using `ADMIN_EMAIL` 
 
 State-changing API requests require a session-backed CSRF token from `/api/auth/csrf` in the `X-CSRF-Token` header. The main site and authentication page obtain and send this token automatically.
 
+The API has global, administrator, and upload-specific rate limits. Failed sign-ins are temporarily blocked by IP after five failures, and state-changing API requests are written to the server audit log without recording request bodies or passwords.
+
 Poll votes are stored in SQLite and each authenticated account can vote only once. Media uploads are accepted only from administrators, limited to 50 MB, restricted to image/video MIME types, and stored in the ignored `uploads/` directory. Poll and media data are served through `/api/poll` and `/api/media`.
 
-For production, use HTTPS, set `NODE_ENV=production`, keep `.env` private, use a managed database and object storage for uploads, and add backups, email verification, password reset, CSRF protection, and two-factor authentication.
+For production, use HTTPS, set `NODE_ENV=production`, keep `.env` private, use a managed database and object storage for uploads, and add backups, email verification, password reset, and two-factor authentication. A Cloudflare WAF requires placing your own domain behind Cloudflare and pointing its DNS to Railway; it cannot be enabled from this repository alone.
 
 ## Render deployment
 

@@ -207,7 +207,33 @@ const csrfToken = req => {
   if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(32).toString('hex');
   return req.session.csrfToken;
 };
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many requests. Try again later.' } });
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false, message: { error: 'Upload rate limit reached. Try again later.' } });
+const adminLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 120, standardHeaders: true, legacyHeaders: false });
+const failedLogins = new Map();
+const loginBlock = (req, res, next) => {
+  const record = failedLogins.get(req.ip);
+  if (record && record.blockedUntil > Date.now()) return res.status(429).json({ error: 'Too many failed sign-in attempts. Try again later.' });
+  if (record && record.blockedUntil <= Date.now()) failedLogins.delete(req.ip);
+  next();
+};
+const recordFailedLogin = ip => {
+  const record = failedLogins.get(ip) || { count: 0, blockedUntil: 0 };
+  record.count += 1;
+  if (record.count >= 5) record.blockedUntil = Date.now() + 15 * 60 * 1000;
+  failedLogins.set(ip, record);
+};
+const clearFailedLogins = ip => failedLogins.delete(ip);
 app.get('/api/auth/csrf', (req, res) => res.json({ token: csrfToken(req) }));
+app.use('/api', apiLimiter);
+app.use('/api/admin', adminLimiter);
+app.use('/api/media', uploadLimiter);
+app.use('/api/admin/slideshow', uploadLimiter);
+app.use('/api/admin/stories', uploadLimiter);
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) console.info(JSON.stringify({ event: 'api_mutation', method: req.method, path: req.path, ip: req.ip, userId: req.session.user?.id || null, at: new Date().toISOString() }));
+  next();
+});
 app.use((req, res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || req.path === '/api/auth/csrf') return next();
   const expected = req.session.csrfToken;
@@ -238,13 +264,14 @@ app.post('/api/auth/signup', authLimiter, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-app.post('/api/auth/login', authLimiter, async (req, res, next) => {
+app.post('/api/auth/login', authLimiter, loginBlock, async (req, res, next) => {
   try {
     const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     const user = findUser.get(email);
     const valid = user && await argon2.verify(user.password_hash, password);
-    if (!valid) return res.status(401).json({ error: 'Email or password is incorrect.' });
+    if (!valid) { recordFailedLogin(req.ip); return res.status(401).json({ error: 'Email or password is incorrect.' }); }
+    clearFailedLogins(req.ip);
     req.session.regenerate(sessionError => {
       if (sessionError) return next(sessionError);
       req.session.user = publicUser(user);
