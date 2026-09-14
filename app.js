@@ -33,9 +33,14 @@ function arrangeTopSections() {
   updates.after(topPoll);
 }
 
+let csrfToken;
 async function apiRequest(url, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (options.body && !(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  if (options.method && !['GET', 'HEAD', 'OPTIONS'].includes(options.method.toUpperCase())) {
+    csrfToken ||= (await fetch('/api/auth/csrf', { credentials: 'same-origin' }).then(response => response.json())).token;
+    headers['X-CSRF-Token'] = csrfToken;
+  }
   const response = await fetch(url, { credentials: 'same-origin', headers, ...options });
   const body = response.status === 204 ? null : await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.error || 'Request failed.');

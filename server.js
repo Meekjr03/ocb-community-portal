@@ -203,6 +203,21 @@ app.use(session({
   cookie: { httpOnly: true, secure: isProduction, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 8 }
 }));
 
+const csrfToken = req => {
+  if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+  return req.session.csrfToken;
+};
+app.get('/api/auth/csrf', (req, res) => res.json({ token: csrfToken(req) }));
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || req.path === '/api/auth/csrf') return next();
+  const expected = req.session.csrfToken;
+  const received = req.get('x-csrf-token');
+  if (!expected || !received || received.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected))) {
+    return res.status(403).json({ error: 'Invalid CSRF token.' });
+  }
+  next();
+});
+
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false });
 const requireAdministrator = (req, res, next) => {
   if (!req.session.user || req.session.user.role !== 'administrator') return res.status(403).json({ error: 'Administrator access required.' });
